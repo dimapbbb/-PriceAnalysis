@@ -19,14 +19,14 @@ class ByBit:
         :return: список завершенных свечей (по устареванию)
         [["dt", "open", "high", "low", "close", "объем", "оборот"], [...], ... ]
         """
-        if 0 < kline_qty < 1001:
-            response = self.session.get_kline(
-                category=self.category,
-                symbol=self.symbol,
-                interval=self.interval,
-                limit=kline_qty + 1
-            )
-            return response.get('result').get('list')[1:]
 
-        else:
-            return ValueError('Недопустимый параметр <kline_qty>')
+        response = self.session.get_kline(
+            category=self.category,
+            symbol=self.symbol,
+            interval=self.interval,
+            limit=kline_qty + 1
+        )
+        return response.get('result').get('list')
+
+
+

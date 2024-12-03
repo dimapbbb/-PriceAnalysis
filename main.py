@@ -1,6 +1,10 @@
+from threading import Timer
+from datetime import datetime
+from time import sleep
+
 from src.algorithm import Algorithm
 from src.config import BASE_COIN, QUOTE_COIN, INTERVAL
-from src.foonctools import modified_
+from src.functools import modified_
 from src.provider import ByBit
 
 
@@ -20,20 +24,45 @@ class Bot:
         )
 
     def work(self):
-        while True:
-            self.trigger_for_get_kline()
+        """ Бесконечный цикл для продолжения работы в реальном времени """
+        interval = int(self.interval)
+        self.trigger_first_iteration(interval)
+        self.restarter(interval*60, self.iterate)
 
-            base_kline = modified_(self.base_coin.get_kline())
-            quote_kline = modified_(self.quote_coin.get_kline())
+    def restarter(self, interval, func):
+        """
+        Постоянный перезапуск функции через интервал
+        :param interval: Время в секундах
+        :param func: Функция, которую надо перезапускать
+        """
+        Timer(interval, self.restarter, [interval, func]).start()
+        func()
 
-            own_price_change = self.algorithm.compare_klines(base_kline, quote_kline)
-            if own_price_change >= 1:
-                print(f"Цена выросла на {own_price_change}%")
-            elif own_price_change <= -1:
-                print(f"Цена упала на {own_price_change}%")
+    def iterate(self):
+        """ Одна совершаемая ботом итерация """
+        base_kline = self.base_coin.get_kline()[-1]
+        quote_kline = self.quote_coin.get_kline()[-1]
 
-    def trigger_for_get_kline(self):
-        pass
+        own_price_change = self.algorithm.compare_klines(modified_(base_kline), modified_(quote_kline))
+        print(f"{own_price_change}%")
+
+    @staticmethod
+    def trigger_first_iteration(interval):
+        """ Запуск первой итерации по времени в зависимости от интервала """
+        if interval < 60:
+            while True:
+                if int(str(datetime.now())[14:16]) % interval == 0 and str(datetime.now())[17:19] == '00':
+                    sleep(2)
+                    return
+                sleep(1)
+
+        elif interval <= 1440:
+            while True:
+                if int(str(datetime.now())[11:13]) % interval / 60 == 0 and str(datetime.now())[14:16] == '00':
+                    sleep(2)
+                    return
+                sleep(60)
+
 
 if __name__ == '__main__':
     Bot(
