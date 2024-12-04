@@ -3,7 +3,6 @@ class Algorithm:
     base_klines_count = quote_klines_count = 0   # Начальные значения количества полученных клайнов
     base_avg_volume = quote_avg_volume = 0       # Начальные значения среднего объема торгов
 
-
     def __init__(self, custom_excess=0):
         self.custom_excess = custom_excess
 
@@ -23,9 +22,9 @@ class Algorithm:
         quote_price_change = self.calculate_price_change(quote)
 
         if (base_above_avg and quote_above_avg) or (not base_above_avg and not quote_above_avg):
-            return quote_price_change - base_price_change
+            return round(quote_price_change - base_price_change, 2)
         else:
-            return quote_price_change
+            return round(quote_price_change, 2)
 
     def compare_current_volume(self, volume:float, avg:float):
         """
@@ -55,4 +54,4 @@ class Algorithm:
         :return: процент на который изменилась цена в течении клайна (отрицательное значение при падении цены)
         """
         price_change = (kline['close'] - kline['open']) / kline['open'] * 100
-        return round(price_change, 2)
+        return price_change

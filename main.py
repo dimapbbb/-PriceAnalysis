@@ -16,11 +16,11 @@ class Bot:
         self.algorithm = Algorithm()
         self.base_coin = ByBit(
             symbol=self.base_coin,
-            interval=self.interval
+            interval=str(self.interval)
         )
         self.quote_coin = ByBit(
             symbol=self.quote_coin,
-            interval=self.interval
+            interval=str(self.interval)
         )
 
     def work(self):
@@ -41,8 +41,11 @@ class Bot:
         base_kline = self.base_coin.get_kline()[-1]
         quote_kline = self.quote_coin.get_kline()[-1]
 
-        own_price_change = self.algorithm.compare_klines(modified_(base_kline), modified_(quote_kline))
-        print(f"{own_price_change}%", datetime.now())
+        if base_kline and quote_kline:
+            own_price_change = self.algorithm.compare_klines(modified_(base_kline), modified_(quote_kline))
+            print(f"{own_price_change}%", datetime.now())
+        else:
+            print('Данные не предоставлены')
 
     def start_work(self):
         """ Задержка перед началом работы позволяющая получать клайны через 3 секунды после их завершения """
