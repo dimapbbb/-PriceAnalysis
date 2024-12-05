@@ -62,4 +62,4 @@ class Algorithm:
         :return: процент на который изменилась цена в течении клайна (отрицательное значение при падении цены)
         """
         price_change = (kline['close'] - kline['open']) / kline['open'] * 100
-        return round(price_change, 2)
+        return price_change
