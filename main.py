@@ -2,8 +2,8 @@ from threading import Timer
 from datetime import datetime
 from time import sleep
 
+from config import BASE_COIN, QUOTE_COIN, INTERVAL, KLINE_QTY
 from src.algorithm import Algorithm
-from config import BASE_COIN, QUOTE_COIN, INTERVAL
 from src.functools import modified_
 from src.provider import ByBit
 
@@ -16,36 +16,12 @@ class Bot:
         self.algorithm = Algorithm()
         self.base_coin = ByBit(
             symbol=self.base_coin,
-            interval=str(self.interval)
+            interval='D' if interval == 1440 else str(interval)
         )
         self.quote_coin = ByBit(
             symbol=self.quote_coin,
-            interval=str(self.interval)
+            interval='D' if interval == 1440 else str(interval)
         )
-
-    def work(self):
-        """ Продолжение работы в реальном времени """
-        self.restarter(self.interval, self.iterate)
-
-    def restarter(self, interval, func):
-        """
-        Перезапуск каждой итерации через интервал
-        :param interval: Время в секундах
-        :param func: Функция, которую надо перезапускать
-        """
-        Timer(interval, self.restarter, [interval, func]).start()
-        func()
-
-    def iterate(self):
-        """ Одна, совершаемая ботом итерация """
-        base_kline = self.base_coin.get_kline()[-1]
-        quote_kline = self.quote_coin.get_kline()[-1]
-
-        if base_kline and quote_kline:
-            own_price_change = self.algorithm.compare_klines(modified_(base_kline), modified_(quote_kline))
-            print(f"{own_price_change}%", datetime.now())
-        else:
-            print('Данные не предоставлены')
 
     def start_work(self):
         """ Задержка перед началом работы позволяющая получать клайны через 3 секунды после их завершения """
@@ -56,10 +32,34 @@ class Bot:
                 return self.work()
             sleep(1)
 
+    def work(self):
+        """ Рекурсивный вызов итерации в одно и то же время согласно интервалу """
+        Timer(self.interval, self.work).start()
+        self.iterate()
+
+    def iterate(self):
+        """ Одна, совершаемая ботом итерация """
+        base_kline = self.base_coin.get_kline()[0]
+        quote_kline = self.quote_coin.get_kline()[0]
+
+        self.algorithm.print_own_price_change(modified_(base_kline), modified_(quote_kline))
+
+    def history_analysis(self, kline_qty:int=1000):
+        """ Исследование <kline_qty> последних клайнов """
+        kline_qty = 1000 if kline_qty > 1000 else kline_qty
+
+        base_history = self.base_coin.get_kline(kline_qty=kline_qty)
+        quote_history = self.quote_coin.get_kline(kline_qty=kline_qty)
+
+        for base_kline, quote_kline in zip(base_history[::-1], quote_history[::-1]):
+            self.algorithm.print_own_price_change(modified_(base_kline), modified_(quote_kline))
+
 
 if __name__ == '__main__':
-    Bot(
+    bot = Bot(
         base_coin=BASE_COIN,
         quote_coin=QUOTE_COIN,
         interval=INTERVAL,
-    ).start_work()
+    )
+    bot.history_analysis(kline_qty=KLINE_QTY)
+    bot.start_work()

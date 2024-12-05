@@ -26,7 +26,7 @@ class ByBit:
             interval=self.interval,
             limit=kline_qty + 1
         )
-        return response.get('result').get('list')
+        return response.get('result').get('list')[1:]
 
 
 
