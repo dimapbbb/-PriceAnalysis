@@ -1,0 +1,5 @@
+services:
+  btceth_60:
+    build: .
+    tty: true
+    command: sh -c "python main.py"
