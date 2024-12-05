@@ -1,8 +1,10 @@
+from datetime import datetime
+
+
 class Algorithm:
     base_all_volume = quote_all_volume = 0       # Начальные значения общего объема торгов
     base_klines_count = quote_klines_count = 0   # Начальные значения количества полученных клайнов
     base_avg_volume = quote_avg_volume = 0       # Начальные значения среднего объема торгов
-
 
     def __init__(self, custom_excess=0):
         self.custom_excess = custom_excess
@@ -23,9 +25,9 @@ class Algorithm:
         quote_price_change = self.calculate_price_change(quote)
 
         if (base_above_avg and quote_above_avg) or (not base_above_avg and not quote_above_avg):
-            return quote_price_change - base_price_change
+            return round(quote_price_change - base_price_change, 2)
         else:
-            return quote_price_change
+            return round(quote_price_change, 2)
 
     def compare_current_volume(self, volume:float, avg:float):
         """
@@ -47,6 +49,11 @@ class Algorithm:
 
         self.base_avg_volume = round(self.base_all_volume / self.base_klines_count, 5)
         self.quote_avg_volume = round(self.quote_all_volume / self.quote_klines_count, 5)
+
+    def print_own_price_change(self, base:dict, quote:dict):
+        """ Вывод в консоль результат сравнения вместе с датой начала интервала"""
+        kline_dt_start = datetime.fromtimestamp(base.get('timestamp') / 1000)
+        print(f"{kline_dt_start} --> {self.compare_klines(base, quote)}%")
 
     @staticmethod
     def calculate_price_change(kline:dict):
