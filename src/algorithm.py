@@ -9,7 +9,7 @@ class Algorithm:
     def __init__(self, custom_excess=0):
         self.custom_excess = custom_excess
 
-    def compare_klines(self, base:dict, quote:dict):
+    def compare_klines(self, base:dict, quote:dict) -> float:
         """
         Сравнение клайнов входящих цен
         :param base: Актив, влияние которого нужно убрать
@@ -29,7 +29,7 @@ class Algorithm:
         else:
             return round(quote_price_change, 2)
 
-    def compare_current_volume(self, volume:float, avg:float):
+    def compare_current_volume(self, volume:float, avg:float) -> bool:
         """
         Сравнивает текущий объем со средним значением, умноженным на пользовательский коэффициент
         :param volume: Объем торгов за последний клайн
@@ -56,7 +56,7 @@ class Algorithm:
         print(f"{kline_dt_start} --> {self.compare_klines(base, quote)}%")
 
     @staticmethod
-    def calculate_price_change(kline:dict):
+    def calculate_price_change(kline:dict) -> float:
         """
         Вычисление процентного изменения цены клайна
         :return: процент на который изменилась цена в течении клайна (отрицательное значение при падении цены)
